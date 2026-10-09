@@ -1,0 +1,58 @@
+<div class="payment-history-container">
+  <div class="card">
+    <div class="history-header">
+      <h2>📋 Payment History</h2>
+      <button class="btn btn-primary" (click)="goToPayment()">New Payment</button>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      {{ error }}
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <div class="loading"></div>
+      <p>Loading payment history...</p>
+    </div>
+
+    <div *ngIf="!loading && payments.length === 0" class="empty-state">
+      <p>No payments found. Start by processing a new payment.</p>
+    </div>
+
+    <div *ngIf="!loading && payments.length > 0" class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Transaction ID</th>
+            <th>Date</th>
+            <th>Card</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let payment of payments">
+            <td>{{ payment.transactionId }}</td>
+            <td>{{ formatDate(payment.createdAt) }}</td>
+            <td>{{ payment.cardNumber }}</td>
+            <td>{{ payment.amount }} {{ payment.currency }}</td>
+            <td>
+              <span [class]="'badge ' + getStatusBadgeClass(payment.status)">
+                {{ payment.status }}
+              </span>
+            </td>
+            <td>
+              <button 
+                *ngIf="payment.status === 'COMPLETED'"
+                class="btn btn-secondary btn-sm"
+                (click)="refundPayment(payment.transactionId)"
+              >
+                Refund
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

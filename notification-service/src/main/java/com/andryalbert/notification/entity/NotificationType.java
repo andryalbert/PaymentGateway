@@ -1,0 +1,15 @@
+package com.andryalbert.notification.entity;
+
+public enum NotificationType {
+    PAYMENT_CREATED,
+    PAYMENT_AUTHORIZED,
+    PAYMENT_FAILED,
+    PAYMENT_REFUNDED,
+    PAYMENT_SETTLED,
+    FRAUD_DETECTED,
+    FRAUD_APPROVED,
+    ACCOUNT_CREATED,
+    BALANCE_UPDATE,
+    SETTLEMENT_COMPLETED,
+    RECONCILIATION_ALERT
+}

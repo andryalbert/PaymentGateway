@@ -1,0 +1,389 @@
+version: '3.8'
+
+services:
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - payment-network
+
+  # Apache Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - payment-network
+
+  # PostgreSQL databases for each service
+  payment-db:
+    image: postgres:16-alpine
+    container_name: payment-db
+    environment:
+      POSTGRES_DB: paymentdb
+      POSTGRES_USER: paymentuser
+      POSTGRES_PASSWORD: paymentpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paymentuser -d paymentdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payment-network
+
+  fraud-db:
+    image: postgres:16-alpine
+    container_name: fraud-db
+    environment:
+      POSTGRES_DB: frauddb
+      POSTGRES_USER: frauduser
+      POSTGRES_PASSWORD: fraudpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - fraud-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U frauduser -d frauddb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payment-network
+
+  ledger-db:
+    image: postgres:16-alpine
+    container_name: ledger-db
+    environment:
+      POSTGRES_DB: ledgerdb
+      POSTGRES_USER: ledgeruser
+      POSTGRES_PASSWORD: ledgerpass
+    ports:
+      - "5434:5432"
+    volumes:
+      - ledger-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledgeruser -d ledgerdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payment-network
+
+  notification-db:
+    image: postgres:16-alpine
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: notificationdb
+      POSTGRES_USER: notificationuser
+      POSTGRES_PASSWORD: notificationpass
+    ports:
+      - "5435:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notificationuser -d notificationdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payment-network
+
+  settlement-db:
+    image: postgres:16-alpine
+    container_name: settlement-db
+    environment:
+      POSTGRES_DB: settlementdb
+      POSTGRES_USER: settlementuser
+      POSTGRES_PASSWORD: settlementpass
+    ports:
+      - "5436:5432"
+    volumes:
+      - settlement-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U settlementuser -d settlementdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payment-network
+
+  reporting-db:
+    image: postgres:16-alpine
+    container_name: reporting-db
+    environment:
+      POSTGRES_DB: reportingdb
+      POSTGRES_USER: reportinguser
+      POSTGRES_PASSWORD: reportingpass
+    ports:
+      - "5437:5432"
+    volumes:
+      - reporting-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reportinguser -d reportingdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - payment-network
+
+  # Keycloak for authentication
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloakuser
+      KC_DB_PASSWORD: keycloakpass
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak-db
+    networks:
+      - payment-network
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloakuser
+      POSTGRES_PASSWORD: keycloakpass
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - payment-network
+
+  # Microservices
+  payment-service:
+     build:
+       context: ./payment-service
+       dockerfile: Dockerfile
+     container_name: payment-service
+     ports:
+       - "8081:8081"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/paymentdb
+       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+     depends_on:
+       payment-db:
+         condition: service_healthy
+       kafka:
+         condition: service_started
+     networks:
+       - payment-network
+     restart: unless-stopped
+
+  fraud-service:
+     build:
+       context: ./fraud-service
+       dockerfile: Dockerfile
+     container_name: fraud-service
+     ports:
+       - "8082:8082"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://fraud-db:5432/frauddb
+       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+     depends_on:
+       fraud-db:
+         condition: service_healthy
+       kafka:
+         condition: service_started
+     networks:
+       - payment-network
+     restart: unless-stopped
+
+  ledger-service:
+     build:
+       context: ./ledger-service
+       dockerfile: Dockerfile
+     container_name: ledger-service
+     ports:
+       - "8083:8083"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://ledger-db:5432/ledgerdb
+       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+     depends_on:
+       ledger-db:
+         condition: service_healthy
+       kafka:
+         condition: service_started
+     networks:
+       - payment-network
+     restart: unless-stopped
+
+  notification-service:
+     build:
+       context: ./notification-service
+       dockerfile: Dockerfile
+     container_name: notification-service
+     ports:
+       - "8084:8084"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notificationdb
+       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+       SMTP_USERNAME: ${SMTP_USERNAME}
+       SMTP_PASSWORD: ${SMTP_PASSWORD}
+     depends_on:
+       notification-db:
+         condition: service_healthy
+       kafka:
+         condition: service_started
+     networks:
+       - payment-network
+     restart: unless-stopped
+
+  settlement-service:
+     build:
+       context: ./settlement-service
+       dockerfile: Dockerfile
+     container_name: settlement-service
+     ports:
+       - "8085:8085"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://settlement-db:5432/settlementdb
+       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+       PSP_API_KEY: ${PSP_API_KEY}
+     depends_on:
+       settlement-db:
+         condition: service_healthy
+       kafka:
+         condition: service_started
+     networks:
+       - payment-network
+     restart: unless-stopped
+
+  reporting-service:
+     build:
+       context: ./reporting-service
+       dockerfile: Dockerfile
+     container_name: reporting-service
+     ports:
+       - "8086:8086"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:postgresql://reporting-db:5432/reportingdb
+       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+     depends_on:
+       reporting-db:
+         condition: service_healthy
+       kafka:
+         condition: service_started
+     networks:
+       - payment-network
+     restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - payment-network
+    restart: unless-stopped
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - payment-network
+    restart: unless-stopped
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - payment-network
+    restart: unless-stopped
+
+  # API Gateway Nginx
+  api-gateway:
+    image: nginx:alpine
+    container_name: api-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - payment-service
+      - fraud-service
+      - ledger-service
+      - notification-service
+      - settlement-service
+      - reporting-service
+      - keycloak
+    networks:
+      - payment-network
+    restart: unless-stopped
+
+volumes:
+  payment-db-data:
+    driver: local
+  fraud-db-data:
+    driver: local
+  ledger-db-data:
+    driver: local
+  notification-db-data:
+    driver: local
+  settlement-db-data:
+    driver: local
+  reporting-db-data:
+    driver: local
+  keycloak-db-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  payment-network:
+    driver: bridge

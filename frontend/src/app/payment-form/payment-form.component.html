@@ -1,0 +1,153 @@
+<div class="payment-form-container">
+  <div class="card">
+    <h2>💳 Process Payment</h2>
+    
+    <div *ngIf="error" class="alert alert-error">
+      {{ error }}
+    </div>
+    
+    <div *ngIf="success" class="alert alert-success">
+      {{ success }}
+    </div>
+
+    <form (ngSubmit)="processPayment()">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Card Number</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="payment.cardNumber" 
+            (input)="formatCardNumber()"
+            placeholder="1234 5678 9012 3456"
+            maxlength="16"
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Card Holder</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="payment.cardHolder" 
+            placeholder="John Doe"
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label class="form-label">Expiry Date</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="payment.expiryDate" 
+            (input)="formatExpiryDate($event)"
+            placeholder="MM/YY"
+            maxlength="5"
+            [ngModelOptions]="{standalone: true}"
+          >
+        </div>
+        <div class="form-group half-width">
+          <label class="form-label">CVV</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            [(ngModel)]="payment.cvv" 
+            (input)="formatCvv()"
+            placeholder="123"
+            maxlength="4"
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label class="form-label">Amount</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            [(ngModel)]="payment.amount" 
+            placeholder="100.00"
+            min="0.01"
+            step="0.01"
+          >
+        </div>
+        <div class="form-group half-width">
+          <label class="form-label">Currency</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="payment.currency" 
+            placeholder="USD"
+            maxlength="3"
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Merchant ID</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="payment.merchantId" 
+            placeholder="MERCHANT-001"
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Description (Optional)</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="payment.description" 
+            placeholder="Payment description"
+          >
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button 
+          type="submit" 
+          class="btn btn-primary" 
+          [disabled]="loading"
+        >
+          <span *ngIf="loading" class="loading"></span>
+          <span *ngIf="!loading">Process Payment</span>
+          <span *ngIf="loading"> Processing...</span>
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="goToHistory()"
+        >
+          View History
+        </button>
+      </div>
+    </form>
+
+    <div *ngIf="lastPayment" class="payment-result">
+      <h3>Payment Result</h3>
+      <div class="result-item">
+        <strong>Transaction ID:</strong> {{ lastPayment.transactionId }}
+      </div>
+      <div class="result-item">
+        <strong>Status:</strong> 
+        <span [class]="'badge badge-' + lastPayment.status.toLowerCase()">
+          {{ lastPayment.status }}
+        </span>
+      </div>
+      <div class="result-item">
+        <strong>Amount:</strong> {{ lastPayment.amount }} {{ lastPayment.currency }}
+      </div>
+      <div class="result-item">
+        <strong>Card:</strong> {{ lastPayment.cardNumber }}
+      </div>
+    </div>
+  </div>
+</div>
