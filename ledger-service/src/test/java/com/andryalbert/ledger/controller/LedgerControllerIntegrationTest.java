@@ -102,7 +102,7 @@ class LedgerControllerIntegrationTest {
     @Test
     void getAccount_ShouldReturn404_WhenAccountNotFound() throws Exception {
         mockMvc.perform(get("/api/v1/ledger/accounts/{accountNumber}", "ACC-NONEXISTENT"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test

@@ -138,7 +138,7 @@ class PaymentControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/payments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(paymentRequest))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -162,9 +162,9 @@ class PaymentControllerIntegrationTest {
     }
 
     @Test
-    void getPayment_ShouldReturn500_WhenPaymentNotFound() throws Exception {
+    void getPayment_ShouldReturn404_WhenPaymentNotFound() throws Exception {
         mockMvc.perform(get("/api/v1/payments/{paymentId}", "PAY-NONEXISTENT"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -254,7 +254,7 @@ class PaymentControllerIntegrationTest {
     }
 
     @Test
-    void refundPayment_ShouldReturn500_WhenPaymentIsNotSettledOrCaptured() throws Exception {
+    void refundPayment_ShouldReturn400_WhenPaymentIsNotSettledOrCaptured() throws Exception {
         Payment payment = paymentRepository.save(new Payment(
             "PAY-TEST-001", "idemp-001", "4111111111111111", "John Doe",
             "12/25", "123", new BigDecimal("100.50"), "USD",
@@ -263,13 +263,13 @@ class PaymentControllerIntegrationTest {
         ));
 
         mockMvc.perform(post("/api/v1/payments/{paymentId}/refund", payment.getPaymentId()))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void refundPayment_ShouldReturn500_WhenPaymentNotFound() throws Exception {
+    void refundPayment_ShouldReturn404_WhenPaymentNotFound() throws Exception {
         mockMvc.perform(post("/api/v1/payments/{paymentId}/refund", "PAY-NONEXISTENT"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -291,7 +291,7 @@ class PaymentControllerIntegrationTest {
     }
 
     @Test
-    void cancelPayment_ShouldReturn500_WhenPaymentIsSettled() throws Exception {
+    void cancelPayment_ShouldReturn400_WhenPaymentIsSettled() throws Exception {
         Payment payment = paymentRepository.save(new Payment(
             "PAY-TEST-001", "idemp-001", "4111111111111111", "John Doe",
             "12/25", "123", new BigDecimal("100.50"), "USD",
@@ -302,11 +302,11 @@ class PaymentControllerIntegrationTest {
         paymentRepository.save(payment);
 
         mockMvc.perform(post("/api/v1/payments/{paymentId}/cancel", payment.getPaymentId()))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void cancelPayment_ShouldReturn500_WhenPaymentIsRefunded() throws Exception {
+    void cancelPayment_ShouldReturn400_WhenPaymentIsRefunded() throws Exception {
         Payment payment = paymentRepository.save(new Payment(
             "PAY-TEST-001", "idemp-001", "4111111111111111", "John Doe",
             "12/25", "123", new BigDecimal("100.50"), "USD",
@@ -317,13 +317,13 @@ class PaymentControllerIntegrationTest {
         paymentRepository.save(payment);
 
         mockMvc.perform(post("/api/v1/payments/{paymentId}/cancel", payment.getPaymentId()))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void cancelPayment_ShouldReturn500_WhenPaymentNotFound() throws Exception {
+    void cancelPayment_ShouldReturn404_WhenPaymentNotFound() throws Exception {
         mockMvc.perform(post("/api/v1/payments/{paymentId}/cancel", "PAY-NONEXISTENT"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
