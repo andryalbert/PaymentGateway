@@ -71,7 +71,7 @@ class ReportingServiceTest {
         assertEquals("PAY-001", savedReport.getPaymentId());
         assertEquals("MERCHANT-001", savedReport.getMerchantId());
         assertEquals("CUST-001", savedReport.getCustomerId());
-        assertEquals(new BigDecimal("100.50"), savedReport.getAmount());
+        assertEquals(0, new BigDecimal("100.50").compareTo(savedReport.getAmount()));
         assertEquals("USD", savedReport.getCurrency());
         assertEquals("AUTHORIZED", savedReport.getStatus());
         assertEquals("PAYMENT_CREATED", savedReport.getEventType());
@@ -197,7 +197,7 @@ class ReportingServiceTest {
         assertEquals(2, savedAggregation.getFraudRejectedTransactions());
         assertEquals(new BigDecimal("1000.00"), savedAggregation.getTotalAmount());
         assertEquals(new BigDecimal("1000.00"), savedAggregation.getSuccessfulAmount());
-        assertEquals(new BigDecimal("0.00"), savedAggregation.getFailedAmount());
+        assertEquals(0, BigDecimal.ZERO.compareTo(savedAggregation.getFailedAmount()));
         assertEquals(new BigDecimal("100.00"), savedAggregation.getAverageTransactionValue());
         assertEquals(new BigDecimal("29.00"), savedAggregation.getTotalFees());
     }

@@ -35,7 +35,7 @@ public class ReportingService {
             String paymentId = root.get("paymentId").asText();
             String merchantId = root.get("merchantId").asText();
             String customerId = root.get("customerId").asText();
-            BigDecimal amount = new BigDecimal(root.get("amount").asText()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal amount = new BigDecimal(root.get("amount").asText());
             String currency = root.get("currency").asText();
             String status = root.has("status") ? root.get("status").asText() : "";
             LocalDateTime eventTimestamp = root.has("timestamp") ? 
@@ -106,7 +106,7 @@ public class ReportingService {
         Integer successfulTransactions = totalTransactions.intValue() - fraudRejectedCount.intValue();
         Integer failedTransactions = fraudRejectedCount.intValue();
         BigDecimal successfulAmount = totalAmount;
-        BigDecimal failedAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP); // In production, calculate from failed transactions
+        BigDecimal failedAmount = BigDecimal.ZERO; // In production, calculate from failed transactions
         BigDecimal averageTransactionValue = totalTransactions > 0 ? 
             totalAmount.divide(new BigDecimal(totalTransactions), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
         BigDecimal totalFees = totalAmount.multiply(new BigDecimal("0.029")); // 2.9% fee
