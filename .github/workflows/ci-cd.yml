@@ -33,20 +33,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t payment-service:${{ github.sha }} ./payment-service
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag payment-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/payment-service:latest
-        docker tag payment-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/payment-service:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/payment-service:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/payment-service:${{ github.sha }}
 
   build-and-test-fraud-service:
     runs-on: ubuntu-latest
@@ -74,20 +60,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t fraud-service:${{ github.sha }} ./fraud-service
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag fraud-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/fraud-service:latest
-        docker tag fraud-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/fraud-service:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/fraud-service:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/fraud-service:${{ github.sha }}
 
   build-and-test-ledger-service:
     runs-on: ubuntu-latest
@@ -115,20 +87,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t ledger-service:${{ github.sha }} ./ledger-service
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag ledger-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ledger-service:latest
-        docker tag ledger-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ledger-service:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/ledger-service:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/ledger-service:${{ github.sha }}
 
   build-and-test-notification-service:
     runs-on: ubuntu-latest
@@ -156,20 +114,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t notification-service:${{ github.sha }} ./notification-service
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag notification-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/notification-service:latest
-        docker tag notification-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/notification-service:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/notification-service:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/notification-service:${{ github.sha }}
 
   build-and-test-settlement-service:
     runs-on: ubuntu-latest
@@ -197,20 +141,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t settlement-service:${{ github.sha }} ./settlement-service
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag settlement-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/settlement-service:latest
-        docker tag settlement-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/settlement-service:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/settlement-service:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/settlement-service:${{ github.sha }}
 
   build-and-test-reporting-service:
     runs-on: ubuntu-latest
@@ -238,20 +168,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t reporting-service:${{ github.sha }} ./reporting-service
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag reporting-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/reporting-service:latest
-        docker tag reporting-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/reporting-service:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/reporting-service:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/reporting-service:${{ github.sha }}
 
   build-and-test-frontend:
     runs-on: ubuntu-latest
@@ -282,20 +198,6 @@ jobs:
     - name: Build Docker image for frontend
       run: docker build -t payment-frontend:${{ github.sha }} ./frontend
     
-    - name: Log in to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag payment-frontend:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/payment-frontend:latest
-        docker tag payment-frontend:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/payment-frontend:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/payment-frontend:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/payment-frontend:${{ github.sha }}
 
   deploy:
     needs: [build-and-test-payment-service, build-and-test-fraud-service, build-and-test-ledger-service, build-and-test-notification-service, build-and-test-settlement-service, build-and-test-reporting-service, build-and-test-frontend]
