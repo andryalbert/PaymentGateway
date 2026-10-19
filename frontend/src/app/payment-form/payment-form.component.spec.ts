@@ -101,8 +101,10 @@ describe('PaymentFormComponent', () => {
   });
 
   it('should format expiry date correctly', () => {
-    component.payment.expiryDate = '1225';
-    component.formatExpiryDate();
+    const mockEvent = {
+      target: { value: '1225' }
+    } as unknown as Event;
+    component.formatExpiryDate(mockEvent);
     expect(component.payment.expiryDate).toBe('12/25');
   });
 
