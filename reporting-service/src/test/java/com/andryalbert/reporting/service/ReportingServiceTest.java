@@ -199,7 +199,7 @@ class ReportingServiceTest {
         assertEquals(new BigDecimal("1000.00"), savedAggregation.getSuccessfulAmount());
         assertEquals(0, BigDecimal.ZERO.compareTo(savedAggregation.getFailedAmount()));
         assertEquals(new BigDecimal("100.00"), savedAggregation.getAverageTransactionValue());
-        assertEquals(new BigDecimal("29.00"), savedAggregation.getTotalFees());
+        assertEquals(new BigDecimal("29.00000"), savedAggregation.getTotalFees());
     }
 
     @Test
