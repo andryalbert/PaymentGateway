@@ -58,7 +58,7 @@ describe('PaymentHistoryComponent', () => {
 
     component.ngOnInit();
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/merchant/MERCHANT-001');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments/merchant/MERCHANT-001');
     expect(req.request.method).toBe('GET');
     req.flush(mockPayments);
 
@@ -69,7 +69,7 @@ describe('PaymentHistoryComponent', () => {
   it('should handle load payments error', () => {
     component.ngOnInit();
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/merchant/MERCHANT-001');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments/merchant/MERCHANT-001');
     req.flush('Error', { status: 500, statusText: 'Internal Server Error' });
 
     expect(component.loading).toBeFalse();
@@ -95,7 +95,7 @@ describe('PaymentHistoryComponent', () => {
 
     component.loadPayments();
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/merchant/MERCHANT-001');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments/merchant/MERCHANT-001');
     req.flush(mockPayments);
 
     expect(component.payments).toEqual(mockPayments);
@@ -122,9 +122,13 @@ describe('PaymentHistoryComponent', () => {
 
     component.refundPayment('TXN123');
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/refund/TXN123');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments/refund/TXN123');
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
+
+    const loadReq = httpMock.expectOne('http://localhost/api/v1/payments/merchant/MERCHANT-001');
+    expect(loadReq.request.method).toBe('GET');
+    loadReq.flush([]);
 
     expect(window.alert).toHaveBeenCalledWith('Payment refunded successfully');
   });
@@ -134,7 +138,7 @@ describe('PaymentHistoryComponent', () => {
 
     component.refundPayment('TXN123');
 
-    httpMock.expectNone('http://localhost:8080/api/payments/refund/TXN123');
+    httpMock.expectNone('http://localhost/api/v1/payments/refund/TXN123');
   });
 
   it('should handle refund payment error', () => {
@@ -143,7 +147,7 @@ describe('PaymentHistoryComponent', () => {
 
     component.refundPayment('TXN123');
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/refund/TXN123');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments/refund/TXN123');
     req.flush({ message: 'Refund failed' }, { status: 400, statusText: 'Bad Request' });
 
     expect(window.alert).toHaveBeenCalledWith('Failed to refund payment: Refund failed');
@@ -201,7 +205,7 @@ describe('PaymentHistoryComponent', () => {
 
     component.refundPayment('TXN123');
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/refund/TXN123');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments/refund/TXN123');
     req.flush(mockResponse);
 
     expect(component.loadPayments).toHaveBeenCalled();

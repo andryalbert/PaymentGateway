@@ -59,30 +59,55 @@ describe('PaymentFormComponent', () => {
   });
 
   it('should invalidate form with invalid card holder', () => {
+    component.payment.cardNumber = '1234567890123456';
     component.payment.cardHolder = 'A';
+    component.payment.expiryDate = '12/25';
+    component.payment.cvv = '123';
+    component.payment.amount = 100;
+    component.payment.currency = 'USD';
     expect(component.validateForm()).toBeFalse();
     expect(component.error).toContain('card holder name');
   });
 
   it('should invalidate form with invalid expiry date', () => {
+    component.payment.cardNumber = '1234567890123456';
+    component.payment.cardHolder = 'John Doe';
     component.payment.expiryDate = '13/25';
+    component.payment.cvv = '123';
+    component.payment.amount = 100;
+    component.payment.currency = 'USD';
     expect(component.validateForm()).toBeFalse();
     expect(component.error).toContain('expiry date');
   });
 
   it('should invalidate form with invalid CVV', () => {
+    component.payment.cardNumber = '1234567890123456';
+    component.payment.cardHolder = 'John Doe';
+    component.payment.expiryDate = '12/25';
     component.payment.cvv = '12';
+    component.payment.amount = 100;
+    component.payment.currency = 'USD';
     expect(component.validateForm()).toBeFalse();
     expect(component.error).toContain('CVV');
   });
 
   it('should invalidate form with invalid amount', () => {
+    component.payment.cardNumber = '1234567890123456';
+    component.payment.cardHolder = 'John Doe';
+    component.payment.expiryDate = '12/25';
+    component.payment.cvv = '123';
     component.payment.amount = 0;
+    component.payment.currency = 'USD';
     expect(component.validateForm()).toBeFalse();
     expect(component.error).toContain('amount greater than 0');
   });
 
   it('should invalidate form with invalid currency', () => {
+    component.payment.cardNumber = '1234567890123456';
+    component.payment.cardHolder = 'John Doe';
+    component.payment.expiryDate = '12/25';
+    component.payment.cvv = '123';
+    component.payment.amount = 100;
     component.payment.currency = 'US';
     expect(component.validateForm()).toBeFalse();
     expect(component.error).toContain('3-character currency code');
@@ -143,7 +168,7 @@ describe('PaymentFormComponent', () => {
 
     component.processPayment();
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/process');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments');
     expect(req.request.method).toBe('POST');
     req.flush({
       id: 1,
@@ -178,7 +203,7 @@ describe('PaymentFormComponent', () => {
 
     component.processPayment();
 
-    const req = httpMock.expectOne('http://localhost:8080/api/payments/process');
+    const req = httpMock.expectOne('http://localhost/api/v1/payments');
     req.flush({ message: 'Payment failed' }, { status: 400, statusText: 'Bad Request' });
 
     expect(component.loading).toBeFalse();
